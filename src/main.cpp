@@ -95,10 +95,21 @@ void AddPC()
   server.send(302, "text/plain", "");
 }
 
-void wakeMyPC()
+void wakePC()
 {
-  const char *MACAddress = "B0:6E:BF:CF:E0:0C";
-  WOL.sendMagicPacket(MACAddress);
+  if (server.arg("mac") && server.arg("port"))
+  {
+    String mac = server.arg("mac");
+    int port = server.arg("port").toInt();
+    Serial.println("Waking PC:");
+    Serial.println(mac);
+    Serial.println(port);
+
+    WOL.sendMagicPacket(mac, port);
+  }
+  // const char *MACAddress = "B0:6E:BF:CF:E0:0C";
+  server.sendHeader("Location", String("/"), true);
+  server.send(302, "text/plain", "");
 }
 
 void setup()
@@ -125,6 +136,7 @@ void setup()
     server.on("/getData", getData);
     server.on("/AddNew", AddPC);
     server.on("/remove", removePC);
+    server.on("/wake", wakePC);
     server.begin();
   }
 }
@@ -133,7 +145,6 @@ void loop()
 {
   if (wifiConnected)
   {
-    // wakeMyPC();
     server.handleClient();
   }
 }
